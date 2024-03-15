@@ -1,0 +1,24 @@
+<?php
+
+namespace App\Models;
+
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
+
+class Image extends Model
+{
+    use HasFactory;
+    protected $table = 'images';
+    protected $primaryKey = 'id';
+    protected $fillable = [
+        'image_name',
+        'description'
+    ];
+    
+    public function image(){
+        return $this->hasMany(Image_language::class);
+    }
+    public function project(){
+        return $this->belongsTo(Project::class);
+    }
+}

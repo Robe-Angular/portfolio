@@ -8,6 +8,7 @@ use Tests\TestCase;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Foundation\Testing\Concerns\MakesHttpRequests;
+use Illuminate\Testing\Fluent\AssertableJson;
 
 
 class ImageTest extends TestCase
@@ -23,20 +24,20 @@ class ImageTest extends TestCase
         $this->TryPostTestProject($jwt_token,'portfolio',true);
         $file = UploadedFile::fake()->image('number0.jpg');
         $this->flushHeaders();
-        $this->put('/api/file/1', [
+        $this->putJson('/api/file/1', [
             'file0' => $file,
         ]);
         Storage::assertMissing($file->hashName());
         //
         $file = UploadedFile::fake()->image('number.jpg');
-        $this->withHeader('Authorization','Bearer '.$jwt_token)->put('/api/file/1', [
+        $this->withHeader('Authorization','Bearer '.$jwt_token)->putJson('/api/file/1', [
             'file0' => $file,
         ]);
         $file_name1 = $file->hashName();
         Storage::assertExists($file_name1);
         //
         $file = UploadedFile::fake()->image('number.jpg');
-        $this->withHeader('Authorization','Bearer '.$jwt_token)->put('/api/file/1', [
+        $this->withHeader('Authorization','Bearer '.$jwt_token)->putJson('/api/file/1', [
             'file0' => $file,
         ]);
         $file_name2 = $file->hashName();
@@ -44,7 +45,7 @@ class ImageTest extends TestCase
         Storage::assertExists($file_name2);
         //
         $file = UploadedFile::fake()->image('number3.jpg');
-        $this->put('/api/file/2', [
+        $this->putJson('/api/file/2', [
             'file0' => $file,
         ]);
         Storage::assertMissing($file->hashName());
@@ -53,7 +54,7 @@ class ImageTest extends TestCase
         $file = UploadedFile::fake()->image('number2.jpg');
         
         $this->flushHeaders();
-        $response = $this->put('/api/file/1', [
+        $response = $this->putJson('/api/file/1', [
             'file0' => $file,
         ]);
         
@@ -79,4 +80,64 @@ class ImageTest extends TestCase
         Storage::assertMissing($file_name2);
         $this->assertDatabaseCount('images',0);
     }
+
+    public function test_get_by_id_destroy(): void
+    {
+        
+        $jwt_token = $this->GetToken();
+        Storage::fake('local');
+        
+        $this->TryPostTestProject($jwt_token,'portfolio',true);
+        for( $i = 0; $i < 5; $i++ ) {
+            $file = UploadedFile::fake()->image('number0'.$i.'.jpg');
+            $this->putJson('/api/file/2', [
+                'file0' => $file,
+            ]);
+            Storage::assertExists($file->hashName());
+        }
+        $file = UploadedFile::fake()->image('number5.jpg');
+        $file_name = $file->hashName();
+        $this->putJson('/api/file/2', [
+            'file0' => $file
+        ]);
+        $response = $this->getJson('api/images/2');
+        $response->assertJson(fn(AssertableJson $json) =>
+            $json->has('images',6)->has('images.5',fn(AssertableJson $json) =>
+                $json->where('image_name',$file_name)->etc()
+            )
+        );
+        Storage::assertExists($file_name);
+        $this->TryPostTestProject($jwt_token,'portfolio2',true);
+        for( $i = 5; $i < 10; $i++ ) {
+            $file = UploadedFile::fake()->image('number0'.$i.'.jpg');
+            $this->putJson('/api/file/3', [
+                'file0' => $file,
+            ]);
+        }
+        $this->deleteJson('api/image/8');
+        Storage::assertMissing($file_name);
+        $response = $this->getJson('api/images/2');
+        $response->assertJson(fn(AssertableJson $json) =>
+            $json->has('images',5)
+        );
+    }
+
+    public function test_set_main(){
+        $jwt_token = $this->GetToken();
+        Storage::fake('local');
+        $this->TryPostTestProject($jwt_token,'portfolio',true);
+        $file = UploadedFile::fake()->image('number5.jpg');
+        $file_name = $file->hashName();
+        $this->putJson('/api/file/4', [
+            'file0' => $file
+        ]);
+        $this->getJson('api/set-main/14');
+        $this->getJson('api/project/4');
+        $response = $this->deleteJson('api/image/14');
+        $response->assertJsonPath('code',409);
+        $this->getJson('api/project/4');
+        Storage::assertExists($file_name);
+    }
+
+
 }

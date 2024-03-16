@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\Image;
 use App\Models\Project;
+use Illuminate\Support\Facades\Storage;
 
 class ImageController extends Controller
 {
@@ -37,7 +38,48 @@ class ImageController extends Controller
         return response()->json($data,$data['code']);
     }
 
-    public function destroy($project_id){
+    public function destroy($image_id){
         
+        $image=Image::find($image_id);
+        $data = [
+            'code'=> 404
+        ];
+        if($image){
+            $image_name = $image->image_name;
+            $data = [
+                'code'=> 409,
+                'message' => 'can\'t delete'
+
+            ];
+            if(!Project::where('image_id',$image_id)->exists()){
+                Storage::disk('local')->delete($image_name);
+                $deleted = $image->delete();
+                return response()->json(['deleted'=>$deleted],200);
+            }
+
+            
+        }
+        return response()->json($data,$data['code']);
+    }
+
+    public function imagesByPost($project_id){
+        $images=Image::where('project_id',$project_id)->get();
+        return response()->json([
+            'images'=> $images
+        ],200);
+    }
+
+    public function setMain($image_id){
+        $image=Image::find($image_id);
+        $project = Project::find($image->project_id);
+        $data = [
+            'code'=> 400
+        ];
+        if(!$project->image_id == $image_id){
+            $project->image_id = $image_id;
+            $project->save();
+            return response()->json(['code'=>200],200);
+        }
+        return response()-> json($data,$data['code']);
     }
 }

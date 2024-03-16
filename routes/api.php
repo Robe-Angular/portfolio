@@ -53,4 +53,7 @@ Route::controller(ProjectLanguageController::class)->group(function(){
 
 Route::controller(ImageController::class)->group(function(){
     Route::put('file/{project_id}','upload');
+    Route::get('images/{project_id}','imagesByPost');
+    Route::delete('image/{image_id}','destroy');
+    Route::get('set-main/{image_id}','setMain');
 });

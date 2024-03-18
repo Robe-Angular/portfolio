@@ -16,7 +16,7 @@ class Project extends Model
         'url',
         'confidencial'
     ];
-    
+
     public function technologies(){
         return $this->belongsToMany(Technology::class,'project_technology','project_id','technology_id');
     }

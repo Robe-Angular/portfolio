@@ -106,7 +106,7 @@ class ProjectTest extends TestCase
             )
         );
 
-        for($i = 1;$i < 5; $i++){
+        for($i = 11;$i < 15; $i++){
             $this->TryPostTestProject($jwt_token,'portfolio'.$i,false);
         }
 
@@ -120,9 +120,9 @@ class ProjectTest extends TestCase
         $response->assertJson(fn(AssertableJson $json) =>
             $json->has('projects',14)
             ->has('projects.10',fn(AssertableJson $json) =>
-                $json->where('id',12)->where('name','portfolio1')->where('url','portfolio1.com')->etc()
+                $json->where('id',12)->where('name','portfolio11')->where('url','portfolio11.com')->etc()
             )->has('projects.13',fn(AssertableJson $json) =>
-                $json->where('id',15)->where('name','portfolio4')->where('url','portfolio4.com')
+                $json->where('id',15)->where('name','portfolio14')->where('url','portfolio14.com')
                 ->where('confidential',0)->etc()
             )
         );

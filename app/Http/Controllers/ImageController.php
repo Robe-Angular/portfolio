@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Image_language;
 use Illuminate\Http\Request;
 use App\Models\Image;
 use App\Models\Project;
@@ -10,9 +11,7 @@ use Illuminate\Support\Facades\Storage;
 class ImageController extends Controller
 {
     public function __construct(){
-        $this->middleware('assign.guard:admin',['except' => [
-            'getImage'
-        ]]);
+        $this->middleware('assign.guard:admin',['except' => []]);
     }
     public function upload(Request $request,$project_id){
         $project = Project::find($project_id);
@@ -31,6 +30,14 @@ class ImageController extends Controller
                     $image->project_id = $project_id;
                     $image->image_name = $path;
                     $image->save();
+                    $config_langs = config('static_arrays.languages');
+                    foreach($config_langs as $lang){
+                        $image_language = new Image_language();
+                        $image_language->image_id = $image->id;
+                        $image_language->language = $lang;
+                        $image_language->description_language = $path.$lang;
+                        $image_language->save();
+                    }
                     return response()->json(['path',$path],200);
                 }
             }

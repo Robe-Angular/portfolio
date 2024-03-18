@@ -16,7 +16,7 @@ class Image extends Model
         'description'
     ];
     
-    public function image(){
+    public function imagesLanguage(){
         return $this->hasMany(Image_language::class);
     }
     public function project(){

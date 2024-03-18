@@ -7,6 +7,8 @@ use App\Http\Controllers\AuthController;
 use App\Http\Controllers\ProjectController;
 use App\Http\Controllers\ProjectLanguageController;
 use App\Http\Controllers\ImageController;
+use App\Http\Controllers\ImageLanguageController;
+use App\Http\Controllers\TechnologyController;
 
 /*
 |--------------------------------------------------------------------------
@@ -56,4 +58,21 @@ Route::controller(ImageController::class)->group(function(){
     Route::get('images/{project_id}','imagesByPost');
     Route::delete('image/{image_id}','destroy');
     Route::get('set-main/{image_id}','setMain');
+});
+
+Route::controller(ImageLanguageController::class)->group(function(){
+    Route::get('list-by-image/{image_id}','listByImage');
+    Route::put('image-language/{image_language_id}','edit');
+    Route::get('by-description/{description_language}','getImageByDescription');
+
+});
+
+Route::controller(TechnologyController::class)->group(function(){
+    Route::post('technology','create');
+    Route::get('projects-by-technology/{technology_id}','getProjectsByTechnology');
+    Route::get('technologies-by-project/{project_id}','getTechnologiesByProject');
+    Route::get('add-technology/{project_id}/{technology_id}','addTechnologyToProject');
+    Route::get('remove-technology/{project_id}/{technology_id}','removeTechnologyFromProject');
+    Route::delete('technology/{technology_id}','destroy');
+    Route::get('technologies-like/{string_like}','getTechnologiesLike');
 });

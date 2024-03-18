@@ -54,7 +54,7 @@ class ImageTest extends TestCase
         $file = UploadedFile::fake()->image('number2.jpg');
         
         $this->flushHeaders();
-        $response = $this->putJson('/api/file/1', [
+        $this->putJson('/api/file/1', [
             'file0' => $file,
         ]);
         
